@@ -12,8 +12,8 @@ importers:
         specifier: ^1.9.3
         version: 1.11.13
       tdesign-miniprogram:
-        specifier: 1.9.5
-        version: 1.9.5
+        specifier: 1.12.1
+        version: 1.12.1
       tslib:
         specifier: ^1.11.1
         version: 1.14.1
@@ -1365,8 +1365,8 @@ packages:
     resolution: {integrity: sha512-wmEc8m4fjnob4gt5riFRtTu/6+4rSe12TpAELNSqHMfF3IqnA+CH37USM6/YR3qRZv7e56kAEAtd6nKZaxe0Ug==}
     engines: {node: '>=6.0.0'}
 
-  tdesign-miniprogram@1.9.5:
-    resolution: {integrity: sha512-TvuGsQFYSJHDpxsa2mXHkEYAkDsoXmFSX+yu2rUxM6aMIHOdRk3ukaC+C4MqgOU6J9cyaLqaPwnhAW/YMD7xcg==}
+  tdesign-miniprogram@1.12.1:
+    resolution: {integrity: sha512-L2w/6lqVXSCtptvlPGlY91dutMb3dJlx9rFpmpLRtG7c7v1l89rIhvgLRgsaBcwTA5btdB8VXGXpTVj621bv5w==}
 
   temp-dir@2.0.0:
     resolution: {integrity: sha512-aoBAniQmmwtcKp/7BzsH8Cxzv8OL736p7v1ihGb5e9DJ9kTwGWHrQrVB5+lfVDzfGrdRzXch+ig7LHaY1JTOrg==}
@@ -3044,7 +3044,7 @@ snapshots:
       slice-ansi: 2.1.0
       string-width: 3.1.0
 
-  tdesign-miniprogram@1.9.5: {}
+  tdesign-miniprogram@1.12.1: {}
 
   temp-dir@2.0.0: {}
 
