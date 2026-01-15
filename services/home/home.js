@@ -1,4 +1,5 @@
 import { config, cdnBase } from '../../config/index';
+import request from '../../utils/request';
 
 /** 获取首页数据 */
 function mockFetchHome() {
@@ -47,7 +48,11 @@ export function fetchHome() {
   if (config.useMock) {
     return mockFetchHome();
   }
-  return new Promise((resolve) => {
-    resolve('real api');
+  return request({
+    url: '/stats/card-data', // 或者首页专用的聚合接口
+    method: 'GET',
+  }).then(res => {
+    // 这里可以根据实际后端返回格式进行转换
+    return mockFetchHome(); // 暂时回退到 mock 以保证 UI 正常，联调时再替换
   });
 }
