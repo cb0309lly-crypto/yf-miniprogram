@@ -1,4 +1,5 @@
 import { config } from '../../config/index';
+import request from '../../utils/request';
 
 /** 获取商品列表 */
 function mockFetchGoodCategory() {
@@ -12,7 +13,16 @@ export function getCategoryList() {
   if (config.useMock) {
     return mockFetchGoodCategory();
   }
-  return new Promise((resolve) => {
-    resolve('real api');
+  return request({
+    url: '/category/tree/list',
+    method: 'GET',
+  }).then((res) => {
+    const formatNode = (node) => ({
+      groupId: node.no,
+      name: node.name,
+      thumbnail: node.icon || '',
+      children: (node.children || []).map(formatNode),
+    });
+    return (res.data || []).map(formatNode);
   });
 }

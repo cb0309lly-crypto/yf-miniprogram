@@ -1,4 +1,5 @@
 import { config } from '../../config/index';
+import request from '../../utils/request';
 
 /** 获取订单详情mock数据 */
 function mockFetchOrderDetail(params) {
@@ -13,9 +14,9 @@ export function fetchOrderDetail(params) {
   if (config.useMock) {
     return mockFetchOrderDetail(params);
   }
-
-  return new Promise((resolve) => {
-    resolve('real api');
+  return request({
+    url: `/order/mp/detail/${params?.parameter || ''}`,
+    method: 'GET',
   });
 }
 
@@ -32,8 +33,8 @@ export function fetchBusinessTime(params) {
   if (config.useMock) {
     return mockFetchBusinessTime(params);
   }
-
-  return new Promise((resolve) => {
-    resolve('real api');
+  return request({
+    url: '/order/business-time',
+    method: 'GET',
   });
 }

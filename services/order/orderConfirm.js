@@ -1,5 +1,6 @@
 import { config } from '../../config/index';
 import { mockIp, mockReqId } from '../../utils/mock';
+import request from '../../utils/request';
 
 /** 获取结算mock数据 */
 function mockFetchSettleDetail(params) {
@@ -39,9 +40,10 @@ export function fetchSettleDetail(params) {
   if (config.useMock) {
     return mockFetchSettleDetail(params);
   }
-
-  return new Promise((resolve) => {
-    resolve('real api');
+  return request({
+    url: '/order/settle',
+    method: 'POST',
+    data: params,
   });
 }
 
@@ -50,9 +52,10 @@ export function dispatchCommitPay(params) {
   if (config.useMock) {
     return mockDispatchCommitPay(params);
   }
-
-  return new Promise((resolve) => {
-    resolve('real api');
+  return request({
+    url: '/order/commit-pay',
+    method: 'POST',
+    data: params,
   });
 }
 
@@ -63,7 +66,5 @@ export function dispatchSupplementInvoice() {
     return delay();
   }
 
-  return new Promise((resolve) => {
-    resolve('real api');
-  });
+  return Promise.resolve({});
 }

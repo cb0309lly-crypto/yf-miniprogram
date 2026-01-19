@@ -1,4 +1,5 @@
 import { config } from '../../config/index';
+import request from '../../utils/request';
 
 /** 获取商品列表 */
 function mockFetchGoodsList(pageIndex = 1, pageSize = 20) {
@@ -23,7 +24,22 @@ export function fetchGoodsList(pageIndex = 1, pageSize = 20) {
   if (config.useMock) {
     return mockFetchGoodsList(pageIndex, pageSize);
   }
-  return new Promise((resolve) => {
-    resolve('real api');
+  return request({
+    url: '/product/list',
+    method: 'GET',
+    data: {
+      page: pageIndex,
+      pageSize,
+    },
+  }).then((res) => {
+    const list = (res.data?.list || []).map((item) => ({
+      spuId: item.no,
+      thumb: item.imgUrl,
+      title: item.name,
+      price: Math.round((item.price || 0) * 100),
+      originPrice: Math.round((item.price || 0) * 100),
+      tags: item.tag ? [item.tag] : [],
+    }));
+    return list;
   });
 }

@@ -1,4 +1,5 @@
 import { config } from '../../config/index';
+import request from '../../utils/request';
 
 /** 获取商品列表 */
 function mockFetchPromotion(ID = 0) {
@@ -12,7 +13,8 @@ export function fetchPromotion(ID = 0) {
   if (config.useMock) {
     return mockFetchPromotion(ID);
   }
-  return new Promise((resolve) => {
-    resolve('real api');
-  });
+  return request({
+    url: `/promotion/${ID}`,
+    method: 'GET',
+  }).then((res) => res.data || {});
 }

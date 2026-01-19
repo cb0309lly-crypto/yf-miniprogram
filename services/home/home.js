@@ -49,10 +49,13 @@ export function fetchHome() {
     return mockFetchHome();
   }
   return request({
-    url: '/stats/card-data', // 或者首页专用的聚合接口
+    url: '/stats/mp-home',
     method: 'GET',
-  }).then(res => {
-    // 这里可以根据实际后端返回格式进行转换
-    return mockFetchHome(); // 暂时回退到 mock 以保证 UI 正常，联调时再替换
+  }).then((res) => {
+    return {
+      swiper: res.data?.swiper || [],
+      tabList: res.data?.tabList || [],
+      activityImg: res.data?.activityImg || '',
+    };
   });
 }

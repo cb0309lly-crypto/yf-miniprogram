@@ -1,4 +1,10 @@
 import { config } from '../../config/index';
+import request from '../../utils/request';
+
+const getUserNo = () => {
+  const userInfo = wx.getStorageSync('userInfo') || {};
+  return userInfo.no || '';
+};
 
 /** 获取优惠券列表 */
 function mockFetchCoupon(status) {
@@ -12,8 +18,28 @@ export function fetchCouponList(status = 'default') {
   if (config.useMock) {
     return mockFetchCoupon(status);
   }
-  return new Promise((resolve) => {
-    resolve('real api');
+  const userNo = getUserNo();
+  if (!userNo) {
+    return Promise.resolve({ data: [] });
+  }
+  return request({
+    url: `/coupon/user/${userNo}`,
+    method: 'GET',
+  }).then((res) => {
+    const list = res.data?.list || res.data || [];
+    return {
+      data: list.map((item) => ({
+        id: item.no,
+        couponId: item.no,
+        type: item.type,
+        title: item.description || '优惠券',
+        value: Math.round((item.value || 0) * 100),
+        base: Math.round((item.minimumAmount || 0) * 100),
+        status,
+        startTime: item.validFrom ? `${new Date(item.validFrom).getTime()}` : '',
+        endTime: item.validUntil ? `${new Date(item.validUntil).getTime()}` : '',
+      })),
+    };
   });
 }
 
@@ -59,7 +85,20 @@ export function fetchCouponDetail(id, status = 'default') {
   if (config.useMock) {
     return mockFetchCouponDetail(id, status);
   }
-  return new Promise((resolve) => {
-    resolve('real api');
+  return request({
+    url: `/coupon/${id}`,
+    method: 'GET',
+  }).then((res) => {
+    const detail = res.data || {};
+    return {
+      detail: {
+        id: detail.no,
+        type: detail.type,
+        value: Math.round((detail.value || 0) * 100),
+        base: Math.round((detail.minimumAmount || 0) * 100),
+        status,
+      },
+      storeInfoList: [],
+    };
   });
 }

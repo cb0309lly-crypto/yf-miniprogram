@@ -1,4 +1,5 @@
 import { config } from '../../config/index';
+import request from '../../utils/request';
 
 /** 获取评价商品 */
 function mockGetGoods(parameter) {
@@ -16,7 +17,13 @@ export function getGoods(parameter) {
   if (config.useMock) {
     return mockGetGoods(parameter);
   }
-  return new Promise((resolve) => {
-    resolve('real api');
+  return request({
+    url: `/order/mp/detail/${parameter}`,
+    method: 'GET',
+  }).then((res) => {
+    const order = res.data || {};
+    return {
+      goodsInfo: order.orderItemVOs || [],
+    };
   });
 }

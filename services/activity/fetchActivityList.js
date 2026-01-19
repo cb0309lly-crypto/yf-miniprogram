@@ -1,4 +1,5 @@
 import { config } from '../../config/index';
+import request from '../../utils/request';
 
 /** 获取活动列表 */
 function mockFetchActivityList(pageIndex = 1, pageSize = 20) {
@@ -13,8 +14,19 @@ export function fetchActivityList(pageIndex = 1, pageSize = 20) {
   if (config.useMock) {
     return mockFetchActivityList(pageIndex, pageSize);
   }
-
-  return new Promise((resolve) => {
-    resolve('real api');
+  return request({
+    url: '/promotion/active/list',
+    method: 'GET',
+    data: {
+      page: pageIndex,
+      pageSize,
+    },
+  }).then((res) => {
+    const list = res.data?.list || res.data || [];
+    return (list || []).map((item) => ({
+      promotionId: item.no,
+      promotionSubCode: item.type,
+      tagText: item.description ? [item.description] : [],
+    }));
   });
 }
