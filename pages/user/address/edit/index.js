@@ -1,5 +1,9 @@
 import Toast from 'tdesign-miniprogram/toast/index';
-import { fetchDeliveryAddress } from '../../../../services/address/fetchAddress';
+import {
+  fetchDeliveryAddress,
+  addAddress,
+  modifyAddress,
+} from '../../../../services/address/fetchAddress';
 import { areaData } from '../../../../config/index';
 import { resolveAddress, rejectAddress } from '../../../../services/address/list';
 
@@ -62,12 +66,23 @@ Page({
 
   init(id) {
     if (id) {
-      this.getAddressDetail(Number(id));
+      this.getAddressDetail(id);
     }
   },
   getAddressDetail(id) {
     fetchDeliveryAddress(id).then((detail) => {
-      this.setData({ locationState: detail }, () => {
+      // 匹配标签索引
+      let labelIndex = null;
+      if (detail.addressTag) {
+        labelIndex = this.data.labels.findIndex(l => l.name === detail.addressTag);
+      }
+      
+      this.setData({ 
+        locationState: {
+          ...detail,
+          labelIndex // 设置选中的标签索引
+        }
+      }, () => {
         const { isLegal, tips } = this.onVerifyInputLegal();
         this.setData({
           submitActive: isLegal,
@@ -132,6 +147,7 @@ Page({
     }
     this.setData({
       'locationState.labelIndex': payload.labelIndex,
+      'locationState.addressTag': payload.addressTag,
     });
     this.triggerEvent('triggerUpdateValue', payload);
   },
@@ -157,7 +173,7 @@ Page({
   onCheckDefaultAddress({ detail }) {
     const { value } = detail;
     this.setData({
-      'locationState.isDefault': value,
+      'locationState.isDefault': value ? 1 : 0,
     });
   },
 
@@ -310,7 +326,7 @@ Page({
 
     this.hasSava = true;
 
-    resolveAddress({
+    const params = {
       saasId: '88888888',
       uid: `88888888205500`,
       authToken: null,
@@ -327,14 +343,36 @@ Page({
       districtName: locationState.districtName,
       districtCode: locationState.districtCode,
       detailAddress: locationState.detailAddress,
-      isDefault: locationState.isDefault === 1 ? 1 : 0,
+      isDefault: locationState.isDefault ? 1 : 0,
       addressTag: locationState.addressTag,
       latitude: locationState.latitude,
       longitude: locationState.longitude,
       storeId: null,
-    });
+    };
 
-    wx.navigateBack({ delta: 1 });
+    const apiCall = locationState.addressId ? modifyAddress(params) : addAddress(params);
+
+    apiCall
+      .then((res) => {
+        // 如果是新增，后端可能返回新的对象，我们更新 params 中的 id
+        if (res && res.no) {
+          params.addressId = res.no;
+          params.id = res.no;
+        }
+
+        resolveAddress(params);
+        wx.navigateBack({ delta: 1 });
+      })
+      .catch((err) => {
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: err.message || '保存失败',
+          icon: 'error',
+          duration: 1500,
+        });
+        this.hasSava = false; // 重置保存状态，允许再次尝试或退出时触发 reject
+      });
   },
 
   getWeixinAddress(e) {

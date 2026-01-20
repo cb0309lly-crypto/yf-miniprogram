@@ -94,3 +94,71 @@ export function fetchCartGroupData(params) {
     };
   });
 }
+
+/** 添加商品到购物车 */
+export function addToCart(params) {
+  const { productNo, quantity } = params;
+  const userNo = getUserNo();
+  
+  if (!userNo) {
+    return Promise.reject({ msg: '请先登录' });
+  }
+
+  return request({
+    url: '/cart/add',
+    method: 'POST',
+    data: {
+      userNo,
+      productNo,
+      quantity
+    }
+  });
+}
+
+/** 更新购物车商品选中状态 */
+export function updateCartItemSelection(cartId, isSelected) {
+  return request({
+    url: `/cart/${cartId}`,
+    method: 'PUT',
+    data: {
+      no: cartId,
+      selected: isSelected
+    }
+  });
+}
+
+/** 全选/取消全选 */
+export function selectAllCartItems(isSelected) {
+  const userNo = getUserNo();
+  return request({
+    url: '/cart/select-all',
+    method: 'POST',
+    data: {
+      userNo,
+      isSelected
+    }
+  });
+}
+
+/** 删除购物车商品 */
+export function deleteCartItem(cartId) {
+  return request({
+    url: `/cart/${cartId}`,
+    method: 'DELETE',
+    data: {
+      no: cartId
+    }
+  });
+}
+
+/** 更新购物车商品数量 */
+export function updateCartItemQuantity(cartId, quantity) {
+  return request({
+    url: '/cart/update-quantity',
+    method: 'POST',
+    data: {
+      no: cartId,
+      quantity
+    }
+  });
+}

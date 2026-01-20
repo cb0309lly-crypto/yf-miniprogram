@@ -27,15 +27,18 @@ export function fetchDeliveryAddress(id = 0) {
     return {
       ...address,
       id: address.no,
+      addressId: address.no,
       name: address.name || '',
       phoneNumber: address.phone || '',
+      phone: address.phone || '',
       address: address.address || '',
-      provinceName: '',
-      cityName: '',
-      districtName: '',
+      provinceName: address.province || '',
+      cityName: address.city || '',
+      districtName: address.district || '',
       detailAddress: address.address || '',
-      tag: '',
-      addressTag: '',
+      tag: address.tag || '',
+      addressTag: address.tag || '',
+      isDefault: address.isDefault ? 1 : 0,
     };
   });
 }
@@ -75,15 +78,78 @@ export function fetchDeliveryAddressList(len = 10) {
     return list.map((address) => ({
       ...address,
       id: address.no,
+      addressId: address.no,
       name: address.name || '',
       phoneNumber: address.phone || '',
-      address: address.address || '',
-      provinceName: '',
-      cityName: '',
-      districtName: '',
+      phone: address.phone || '',
+      address: `${address.province || ''}${address.city || ''}${address.district || ''}${address.address || ''}`,
+      provinceName: address.province || '',
+      cityName: address.city || '',
+      districtName: address.district || '',
       detailAddress: address.address || '',
-      tag: '',
-      addressTag: '',
+      tag: address.tag || '',
+      addressTag: address.tag || '',
+      isDefault: address.isDefault ? 1 : 0,
     }));
+  });
+}
+
+/** 新增收货地址 */
+export function addAddress(params) {
+  if (config.useMock) {
+    const { delay } = require('../_utils/delay');
+    return delay().then(() => ({ ...params, id: `${Date.now()}` }));
+  }
+  return request({
+    url: '/receiver',
+    method: 'POST',
+    data: {
+      name: params.name,
+      phone: params.phone,
+      province: params.provinceName,
+      city: params.cityName,
+      district: params.districtName,
+      address: params.detailAddress,
+      isDefault: params.isDefault === 1 || params.isDefault === true,
+      tag: params.addressTag,
+      userNo: getUserNo(),
+      groupBy: 1, // 默认分组
+    },
+  });
+}
+
+/** 修改收货地址 */
+export function modifyAddress(params) {
+  if (config.useMock) {
+    const { delay } = require('../_utils/delay');
+    return delay().then(() => params);
+  }
+  return request({
+    url: '/receiver',
+    method: 'PUT',
+    data: {
+      no: params.addressId,
+      name: params.name,
+      phone: params.phone,
+      province: params.provinceName,
+      city: params.cityName,
+      district: params.districtName,
+      address: params.detailAddress,
+      isDefault: params.isDefault === 1 || params.isDefault === true,
+      tag: params.addressTag,
+      userNo: getUserNo(),
+    },
+  });
+}
+
+/** 删除收货地址 */
+export function deleteAddress(id) {
+  if (config.useMock) {
+    const { delay } = require('../_utils/delay');
+    return delay();
+  }
+  return request({
+    url: `/receiver/${id}`,
+    method: 'DELETE',
   });
 }

@@ -33,6 +33,10 @@ Component({
       type: Number,
       value: 1,
     },
+    step: {
+      type: Number,
+      value: 1,
+    },
     skuList: {
       type: Array,
       value: [],
@@ -332,6 +336,10 @@ Component({
     handleBuyNumChange(e) {
       const { value } = e.detail;
       this.setData({
+        buyNum: value,
+      });
+      // 触发数量变化事件
+      this.triggerEvent('changeNum', {
         buyNum: value,
       });
     },

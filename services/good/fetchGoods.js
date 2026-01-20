@@ -20,26 +20,34 @@ function mockFetchGoodsList(pageIndex = 1, pageSize = 20) {
 }
 
 /** 获取商品列表 */
-export function fetchGoodsList(pageIndex = 1, pageSize = 20) {
+export function fetchGoodsList(params) {
   if (config.useMock) {
-    return mockFetchGoodsList(pageIndex, pageSize);
+    return mockFetchGoodsList(params.page || 1, params.pageSize || 20);
   }
+  const { categoryId, page, pageSize } = params;
+  const data = {
+    page: page || 1,
+    pageSize: pageSize || 20,
+    status: '已上架',
+  };
+  
+  if (categoryId) {
+    data.categoryNo = categoryId;
+  }
+  
   return request({
     url: '/product/list',
     method: 'GET',
-    data: {
-      page: pageIndex,
-      pageSize,
-    },
+    data,
   }).then((res) => {
     const list = (res.data?.list || []).map((item) => ({
       spuId: item.no,
       thumb: item.imgUrl,
       title: item.name,
       price: Math.round((item.price || 0) * 100),
-      originPrice: Math.round((item.price || 0) * 100),
+      originPrice: Math.round((item.marketPrice || item.price || 0) * 100),
       tags: item.tag ? [item.tag] : [],
     }));
-    return list;
+    return { list, total: res.data?.total || 0 };
   });
 }

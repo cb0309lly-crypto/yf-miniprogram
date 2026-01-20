@@ -1,6 +1,12 @@
 import Dialog from 'tdesign-miniprogram/dialog/index';
 import Toast from 'tdesign-miniprogram/toast/index';
-import { fetchCartGroupData } from '../../services/cart/cart';
+import {
+  fetchCartGroupData,
+  updateCartItemSelection,
+  selectAllCartItems,
+  deleteCartItem,
+  updateCartItemQuantity,
+} from '../../services/cart/cart';
 
 Page({
   data: {
@@ -10,16 +16,21 @@ Page({
   // 调用自定义tabbar的init函数，使页面与tabbar激活状态保持一致
   onShow() {
     this.getTabBar().init();
+    this.refreshData();
   },
 
   onLoad() {
-    this.refreshData();
+    // this.refreshData(); // Moved to onShow to ensure data is fresh
   },
 
   refreshData() {
     this.getCartGroupData().then((res) => {
       let isEmpty = true;
       const cartGroupData = res.data;
+      let isAllSelected = true;
+      let totalAmount = 0;
+      let selectedGoodsCount = 0;
+      
       // 一些组件中需要的字段可能接口并没有返回，或者返回的数据结构与预期不一致，需要在此先对数据做一些处理
       // 统计门店下加购的商品是否全选、是否存在缺货/无货
       for (const store of cartGroupData.storeGoods) {
@@ -39,6 +50,10 @@ Page({
             // 统计是否全选
             if (!goods.isSelected) {
               store.isSelected = false;
+              isAllSelected = false;
+            } else {
+              selectedGoodsCount += goods.quantity;
+              totalAmount += Number(goods.price) * goods.quantity;
             }
             // 库存为0（无货）的商品单独分组
             if (goods.stockQuantity > 0) {
@@ -61,6 +76,15 @@ Page({
         return goods;
       });
       cartGroupData.isNotEmpty = !isEmpty;
+      
+      if (!cartGroupData.isNotEmpty) {
+        isAllSelected = false;
+      }
+      
+      cartGroupData.isAllSelected = isAllSelected;
+      cartGroupData.totalAmount = totalAmount;
+      cartGroupData.selectedGoodsCount = selectedGoodsCount;
+      
       this.setData({ cartGroupData });
     });
   },
@@ -95,72 +119,31 @@ Page({
 
   // 注：实际场景时应该调用接口获取购物车数据
   getCartGroupData() {
-    const { cartGroupData } = this.data;
-    if (!cartGroupData) {
-      return fetchCartGroupData();
-    }
-    return Promise.resolve({ data: cartGroupData });
+    return fetchCartGroupData();
   },
 
   // 选择单个商品
-  // 注：实际场景时应该调用接口更改选中状态
   selectGoodsService({ spuId, skuId, isSelected }) {
-    this.findGoods(spuId, skuId).currentGoods.isSelected = isSelected;
-    return Promise.resolve();
+    return updateCartItemSelection(skuId, isSelected);
   },
 
   // 全选门店
-  // 注：实际场景时应该调用接口更改选中状态
   selectStoreService({ storeId, isSelected }) {
-    const currentStore = this.data.cartGroupData.storeGoods.find((s) => s.storeId === storeId);
-    currentStore.isSelected = isSelected;
-    currentStore.promotionGoodsList.forEach((activity) => {
-      activity.goodsPromotionList.forEach((goods) => {
-        goods.isSelected = isSelected;
-      });
-    });
-    return Promise.resolve();
+    // Assuming single store for now, or I can use selectAllCartItems
+    return selectAllCartItems(isSelected);
   },
 
   // 加购数量变更
-  // 注：实际场景时应该调用接口
   changeQuantityService({ spuId, skuId, quantity }) {
-    this.findGoods(spuId, skuId).currentGoods.quantity = quantity;
-    return Promise.resolve();
+    return updateCartItemQuantity(skuId, quantity);
   },
 
   // 删除加购商品
-  // 注：实际场景时应该调用接口
   deleteGoodsService({ spuId, skuId }) {
-    function deleteGoods(group) {
-      for (const gindex in group) {
-        const goods = group[gindex];
-        if (goods.spuId === spuId && goods.skuId === skuId) {
-          group.splice(gindex, 1);
-          return gindex;
-        }
-      }
-      return -1;
-    }
-    const { storeGoods, invalidGoodItems } = this.data.cartGroupData;
-    for (const store of storeGoods) {
-      for (const activity of store.promotionGoodsList) {
-        if (deleteGoods(activity.goodsPromotionList) > -1) {
-          return Promise.resolve();
-        }
-      }
-      if (deleteGoods(store.shortageGoodsList) > -1) {
-        return Promise.resolve();
-      }
-    }
-    if (deleteGoods(invalidGoodItems) > -1) {
-      return Promise.resolve();
-    }
-    return Promise.reject();
+    return deleteCartItem(skuId);
   },
 
   // 清空失效商品
-  // 注：实际场景时应该调用接口
   clearInvalidGoodsService() {
     this.data.cartGroupData.invalidGoodItems = [];
     return Promise.resolve();
@@ -269,9 +252,10 @@ Page({
     Toast({
       context: this,
       selector: '#t-toast',
-      message: `${isAllSelected ? '取消' : '点击'}了全选按钮`,
+      message: `${!isAllSelected ? '全选' : '取消全选'}`,
     });
     // 调用接口改变全选
+    selectAllCartItems(!isAllSelected).then(() => this.refreshData());
   },
 
   onToSettle() {

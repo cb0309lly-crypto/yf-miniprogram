@@ -5,7 +5,7 @@ const request = (options) => {
     const { url, method = 'GET', data = {}, header = {} } = options;
     
     // 获取存储的 token
-    const token = wx.getStorageSync('token');
+    const token = wx.getStorageSync('access_token');
     if (token) {
       header['Authorization'] = `Bearer ${token}`;
     }
@@ -23,8 +23,8 @@ const request = (options) => {
           resolve(res.data);
         } else if (res.statusCode === 401) {
           // Token 过期或未授权，可以跳转到登录页
-          wx.removeStorageSync('token');
-          // wx.navigateTo({ url: '/pages/usercenter/index' });
+          wx.removeStorageSync('access_token');
+          wx.navigateTo({ url: '/pages/login/index' });
           reject(res);
         } else {
           reject(res);
@@ -38,4 +38,5 @@ const request = (options) => {
 };
 
 export default request;
+
 

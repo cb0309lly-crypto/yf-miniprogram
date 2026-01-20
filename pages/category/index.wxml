@@ -1,8 +1,19 @@
 <view class="wrap">
   <goods-category
-    level="{{3}}"
+    level="{{1}}"
     custom-class="goods-category-class"
     category="{{list}}"
-    bind:changeCategory="onChange"
-  />
+    bind:change="onChange"
+  >
+    <goods-list
+      wx:if="{{goodsList.length > 0 || goodsLoading}}"
+      wr-class="category-goods-list"
+      goodsList="{{goodsList}}"
+      bind:click="onGoodsClick"
+      bind:addcart="onAddCart"
+    />
+    <view wx:else class="empty-wrap">
+      <t-empty icon="info-circle-filled" description="暂无相关商品" />
+    </view>
+  </goods-category>
 </view>

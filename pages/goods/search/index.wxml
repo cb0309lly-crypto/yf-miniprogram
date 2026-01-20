@@ -4,7 +4,6 @@
     t-class-input="t-search__input"
     value="{{searchValue}}"
     leftIcon=""
-    placeholder="iPhone12pro"
     bind:submit="handleSubmit"
     focus
   >

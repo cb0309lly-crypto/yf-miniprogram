@@ -1,5 +1,8 @@
 /* eslint-disable no-param-reassign */
-import { fetchDeliveryAddressList } from '../../../../services/address/fetchAddress';
+import {
+  fetchDeliveryAddressList,
+  deleteAddress,
+} from '../../../../services/address/fetchAddress';
 import Toast from 'tdesign-miniprogram/toast/index';
 import { resolveAddress, rejectAddress } from '../../../../services/address/list';
 import { getAddressPromise } from '../../../../services/address/edit';
@@ -103,11 +106,23 @@ Page({
   },
   deleteAddressHandle(e) {
     const { id } = e.currentTarget.dataset;
-    this.setData({
-      addressList: this.data.addressList.filter((address) => address.id !== id),
-      deleteID: '',
-      showDeleteConfirm: false,
-    });
+    deleteAddress(id)
+      .then(() => {
+        this.setData({
+          addressList: this.data.addressList.filter((address) => address.id !== id),
+          deleteID: '',
+          showDeleteConfirm: false,
+        });
+      })
+      .catch((err) => {
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: err.message || '删除失败',
+          icon: 'error',
+          duration: 1000,
+        });
+      });
   },
   editAddressHandle({ detail }) {
     this.waitForNewAddress();

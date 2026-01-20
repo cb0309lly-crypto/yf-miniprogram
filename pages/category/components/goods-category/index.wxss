@@ -1,5 +1,7 @@
 .goods-category {
   display: flex;
+  height: 100vh;
+  width: 100%;
 }
 
 .custom-sidebar {
@@ -8,8 +10,7 @@
 
 .goods-category__right {
   height: 100%;
-  flex: auto;
-  width: 0;
+  flex: 1;
   position: relative;
   overflow: scroll;
   -webkit-overflow-scrolling: touch;

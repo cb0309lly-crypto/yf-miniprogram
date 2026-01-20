@@ -1,0 +1,9 @@
+<view class="login-container">
+  <view class="logo-area">
+    <image class="logo" src="/assets/imgs/soybean.jpg" mode="aspectFit"></image>
+    <view class="title">欢迎来到亦丰零售</view>
+  </view>
+  <view class="btn-area">
+    <button class="login-btn" bindtap="handleLogin">微信一键登录</button>
+  </view>
+</view>

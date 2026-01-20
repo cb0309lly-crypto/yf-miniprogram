@@ -19,17 +19,18 @@ export function fetchGood(ID = 0) {
   }).then((res) => {
     const product = res.data || {};
     const price = Math.round((product.price || 0) * 100);
+    const marketPrice = product.marketPrice ? Math.round(product.marketPrice * 100) : price;
     const specId = 'default-spec';
     const specValueId = 'default-value';
     return {
       spuId: product.no,
       title: product.name || '商品',
       primaryImage: product.imgUrl || '',
-      images: product.imgUrl ? [product.imgUrl] : [],
+      images: product.swiperImages && product.swiperImages.length > 0 ? product.swiperImages : (product.imgUrl ? [product.imgUrl] : []),
       minSalePrice: price,
       maxSalePrice: price,
-      minLinePrice: price,
-      maxLinePrice: price,
+      minLinePrice: marketPrice,
+      maxLinePrice: marketPrice,
       spuStockQuantity: product.stockQuantity || 0,
       soldNum: product.soldNum || 0,
       isPutOnSale: product.status === '已上架' ? 1 : 0,
@@ -70,11 +71,15 @@ export function fetchGood(ID = 0) {
           profitPrice: null,
         },
       ],
-      desc: product.description ? [product.description] : [],
+      desc: product.detailImages && product.detailImages.length > 0 ? product.detailImages : (product.description ? [product.description] : []),
       spuTagList: product.tag ? [{ id: product.tag, title: product.tag, image: null }] : [],
       limitInfo: [],
       etitle: '',
       available: 1,
+      // 最低购买单位数，默认为1
+      minBuyQuantity: product.minBuyQuantity || 1,
+      // 销售单位数量（步进值），默认为1
+      saleUnitQuantity: product.saleUnitQuantity || 1,
     };
   });
 }

@@ -10,6 +10,9 @@
   overflow: hidden;
 }
 .goods-category-class {
+  display: flex !important;
+  flex-direction: row !important;
+  width: 100%;
   background-color: #f6f6f6 !important;
   height: 100%;
 }
@@ -17,7 +20,100 @@
   margin-top: 20rpx;
 }
 
+.empty-wrap {
+  padding-top: 200rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 page {
   min-height: none;
   padding-bottom: 0;
+}
+
+/* 分类页面商品卡片样式 - 单列水平卡片布局 */
+.category-goods-list,
+.category-goods-list.goods-list-wrap {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-flow: column nowrap !important;
+  flex-wrap: nowrap !important;
+  justify-content: flex-start !important;
+  padding: 16rpx !important;
+  padding-bottom: 150rpx !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 覆盖 goods-card 组件样式，改为水平卡片 */
+.category-goods-list .goods-card,
+.category-goods-list .goods-card-inside {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  margin-bottom: 16rpx !important;
+  border-radius: 16rpx !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+}
+
+.category-goods-list .goods-card__main {
+  flex-direction: row !important;
+  padding: 16rpx;
+}
+
+.category-goods-list .goods-card__thumb {
+  width: 180rpx !important;
+  height: 180rpx !important;
+  flex-shrink: 0;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.category-goods-list .goods-card__body {
+  flex: 1;
+  padding: 0 0 0 20rpx !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.category-goods-list .goods-card__title {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #333;
+  line-height: 40rpx;
+  height: auto !important;
+  max-height: 80rpx;
+  -webkit-line-clamp: 2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.category-goods-list .goods-card__tags {
+  margin: 8rpx 0 !important;
+}
+
+.category-goods-list .goods-card__down {
+  margin-top: auto !important;
+  padding-top: 8rpx;
+}
+
+.category-goods-list .goods-card__add-cart {
+  position: absolute;
+  right: 40rpx;
+  bottom: 0;
+}
+
+.category-goods-list .spec-for-price {
+  font-size: 32rpx;
+  color: #fa4126;
+  font-weight: 700;
+}
+
+.category-goods-list .goods-card__origin-price {
+  font-size: 22rpx;
+  color: #999;
 }

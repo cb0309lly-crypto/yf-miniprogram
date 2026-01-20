@@ -54,9 +54,12 @@
         <view class="popup-sku-stepper-container">
           <view class="popup-sku__stepper-title">
             购买数量
-            <view class="limit-text" wx:if="{{limitBuyInfo}}"> ({{limitBuyInfo}}) </view>
+            <view class="limit-text" wx:if="{{step > 1 && limitMinCount > 1}}"> ({{limitMinCount}}件起购，每次加{{step}}件) </view>
+            <view class="limit-text" wx:elif="{{step > 1}}"> (每次加{{step}}件) </view>
+            <view class="limit-text" wx:elif="{{limitMinCount > 1}}"> (最少{{limitMinCount}}件起购) </view>
+            <view class="limit-text" wx:elif="{{limitBuyInfo}}"> ({{limitBuyInfo}}) </view>
           </view>
-          <t-stepper value="{{buyNum}}" min="{{1}}" max="{{2}}" theme="filled" bind:change="handleBuyNumChange" />
+          <t-stepper value="{{buyNum}}" min="{{limitMinCount}}" max="{{limitMaxCount}}" step="{{step}}" theme="filled" bind:change="handleBuyNumChange" />
         </view>
       </view>
     </view>

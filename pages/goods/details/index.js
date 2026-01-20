@@ -1,6 +1,7 @@
 import Toast from 'tdesign-miniprogram/toast/index';
 import { fetchGood } from '../../../services/good/fetchGood';
 import { fetchActivityList } from '../../../services/activity/fetchActivityList';
+import { addToCart } from '../../../services/cart/cart';
 import {
   getGoodsDetailsCommentList,
   getGoodsDetailsCommentsCount,
@@ -65,6 +66,8 @@ Page({
     soldout: false,
     buttonType: 1,
     buyNum: 1,
+    minBuyQuantity: 1, // 最低购买单位数
+    saleUnitQuantity: 1, // 销售单位数量（步进值）
     selectedAttrStr: '',
     skuArray: [],
     primaryImage: '',
@@ -216,14 +219,41 @@ Page({
   },
 
   addCart() {
-    const { isAllSelectedSku } = this.data;
-    Toast({
-      context: this,
-      selector: '#t-toast',
-      message: isAllSelectedSku ? '点击加入购物车' : '请选择规格',
-      icon: '',
-      duration: 1000,
-    });
+    const { isAllSelectedSku, buyNum, spuId } = this.data;
+    if (!isAllSelectedSku) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请选择规格',
+        icon: '',
+        duration: 1000,
+      });
+      return;
+    }
+
+    addToCart({
+      productNo: spuId,
+      quantity: buyNum,
+    })
+      .then(() => {
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '加入购物车成功',
+          icon: 'check-circle',
+          duration: 1000,
+        });
+        this.handlePopupHide();
+      })
+      .catch((err) => {
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: err.msg || '加入购物车失败',
+          icon: 'error-circle',
+          duration: 1000,
+        });
+      });
   },
 
   gotoBuy(type) {
@@ -305,7 +335,12 @@ Page({
     Promise.all([fetchGood(spuId), fetchActivityList()]).then((res) => {
       const [details, activityList] = res;
       const skuArray = [];
-      const { skuList, primaryImage, isPutOnSale, minSalePrice, maxSalePrice, maxLinePrice, soldNum } = details;
+      const { skuList, primaryImage, isPutOnSale, minSalePrice, maxSalePrice, maxLinePrice, soldNum, minBuyQuantity, saleUnitQuantity } = details;
+      // 获取购买限制参数
+      const minQty = minBuyQuantity || 1; // 最低购买单位数
+      const unitQty = saleUnitQuantity || 1; // 销售单位数量（步进值）
+      // 实际最低购买数量 = 销售单位数量 × 最低购买单位数
+      const actualMinQuantity = unitQty * minQty;
       skuList.forEach((item) => {
         skuArray.push({
           skuId: item.skuId,
@@ -332,6 +367,9 @@ Page({
         primaryImage,
         soldout: isPutOnSale === 0,
         soldNum,
+        minBuyQuantity: actualMinQuantity, // 实际最低购买数量
+        saleUnitQuantity: unitQty, // 销售单位数量（步进值）
+        buyNum: actualMinQuantity, // 默认购买数量设为实际最低购买数量
       });
     });
   },

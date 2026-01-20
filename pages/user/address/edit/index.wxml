@@ -97,6 +97,7 @@
         <t-cell title="设置为默认收货地址" bordered="{{false}}">
           <t-switch
             value="{{locationState.isDefault}}"
+            custom-value="{{[1, 0]}}"
             slot="note"
             colors="{{['#0ABF5B', '#c6c6c6']}}"
             bind:change="onCheckDefaultAddress"
