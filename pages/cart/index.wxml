@@ -1,5 +1,13 @@
 <!-- 分层购物车 -->
 <block wx:if="{{cartGroupData.isNotEmpty}}">
+  <!-- 顶部编辑按钮 -->
+  <view class="cart-header">
+    <view class="cart-title">购物车</view>
+    <view class="edit-btn" bindtap="onToggleEditMode">
+      {{isEditMode ? '完成' : '编辑'}}
+    </view>
+  </view>
+
   <cart-group
     store-goods="{{ cartGroupData.storeGoods }}"
     invalid-good-items="{{ cartGroupData.invalidGoodItems }}"
@@ -15,6 +23,7 @@
   <view class="gap" />
   <!-- 商品小计以及结算按钮 -->
   <cart-bar
+    wx:if="{{!isEditMode}}"
     is-all-selected="{{cartGroupData.isAllSelected}}"
     total-amount="{{cartGroupData.totalAmount}}"
     total-goods-num="{{cartGroupData.selectedGoodsCount}}"
@@ -24,6 +33,16 @@
     bindhandleSelectAll="onSelectAll"
     bindhandleToSettle="onToSettle"
   />
+  <!-- 编辑模式下的批量删除按钮 -->
+  <view wx:else class="cart-edit-bar">
+    <view class="select-all" bindtap="onSelectAll">
+      <t-icon name="{{cartGroupData.isAllSelected ? 'check-circle-filled' : 'circle'}}" size="48rpx" />
+      <text>全选</text>
+    </view>
+    <view class="batch-delete-btn" bindtap="onBatchDelete">
+      删除选中({{cartGroupData.selectedGoodsCount}})
+    </view>
+  </view>
 </block>
 <!-- 购物车空态 -->
 <cart-empty wx:else bind:handleClick="onGotoHome" />

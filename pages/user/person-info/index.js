@@ -1,5 +1,7 @@
 import { fetchPerson } from '../../../services/usercenter/fetchPerson';
+import { updatePerson } from '../../../services/usercenter/updatePerson';
 import { phoneEncryption } from '../../../utils/util';
+import { config } from '../../../config/index';
 import Toast from 'tdesign-miniprogram/toast/index';
 
 Page({
@@ -74,12 +76,25 @@ Page({
         'personInfo.gender': value,
       },
       () => {
-        Toast({
-          context: this,
-          selector: '#t-toast',
-          message: '设置成功',
-          theme: 'success',
-        });
+        // 保存性别到服务器
+        updatePerson({ gender: parseInt(value) })
+          .then(() => {
+            Toast({
+              context: this,
+              selector: '#t-toast',
+              message: '设置成功',
+              theme: 'success',
+            });
+          })
+          .catch((err) => {
+            console.error('更新性别失败:', err);
+            Toast({
+              context: this,
+              selector: '#t-toast',
+              message: '设置失败',
+              theme: 'error',
+            });
+          });
       },
     );
   },
@@ -101,15 +116,49 @@ Page({
           fail: (err) => reject(err),
         });
       });
-      const tempUrlArr = tempFilePath.split('/');
-      const tempFileName = tempUrlArr[tempUrlArr.length - 1];
+      
+      // 上传图片到服务器
+      wx.showLoading({ title: '上传中...' });
+      const uploadRes = await new Promise((resolve, reject) => {
+        const token = wx.getStorageSync('access_token');
+        wx.uploadFile({
+          url: `${config.apiBaseUrl}/upload/image`,
+          filePath: tempFilePath,
+          name: 'file',
+          header: {
+            Authorization: `Bearer ${token}`,
+          },
+          success: (res) => {
+            const data = JSON.parse(res.data);
+            if (data.code === 0 && data.data) {
+              resolve(data.data.url);
+            } else if (data.url) {
+              // 兼容直接返回url的情况
+              resolve(data.url);
+            } else {
+              reject({ errMsg: data.msg || '上传失败' });
+            }
+          },
+          fail: (err) => reject(err),
+        });
+      });
+
+      // 更新头像到服务器
+      await updatePerson({ avatarUrl: uploadRes });
+      
+      this.setData({
+        'personInfo.avatarUrl': uploadRes,
+      });
+      
+      wx.hideLoading();
       Toast({
         context: this,
         selector: '#t-toast',
-        message: `已选择图片-${tempFileName}`,
+        message: '头像修改成功',
         theme: 'success',
       });
     } catch (error) {
+      wx.hideLoading();
       if (error.errMsg === 'chooseImage:fail cancel') return;
       Toast({
         context: this,

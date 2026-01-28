@@ -11,6 +11,7 @@ import {
 Page({
   data: {
     cartGroupData: null,
+    isEditMode: false, // 是否处于编辑模式
   },
 
   // 调用自定义tabbar的init函数，使页面与tabbar激活状态保持一致
@@ -274,5 +275,50 @@ Page({
   },
   onGotoHome() {
     wx.switchTab({ url: '/pages/home/home' });
+  },
+
+  // 切换编辑模式
+  onToggleEditMode() {
+    this.setData({
+      isEditMode: !this.data.isEditMode,
+    });
+  },
+
+  // 批量删除选中的商品
+  onBatchDelete() {
+    const selectedGoods = [];
+    this.data.cartGroupData.storeGoods.forEach((store) => {
+      store.promotionGoodsList.forEach((promotion) => {
+        promotion.goodsPromotionList.forEach((goods) => {
+          if (goods.isSelected) {
+            selectedGoods.push(goods);
+          }
+        });
+      });
+    });
+
+    if (selectedGoods.length === 0) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请选择要删除的商品',
+      });
+      return;
+    }
+
+    Dialog.confirm({
+      content: `确认删除选中的${selectedGoods.length}件商品吗?`,
+      confirmBtn: '确定',
+      cancelBtn: '取消',
+    }).then(() => {
+      const deletePromises = selectedGoods.map((goods) =>
+        this.deleteGoodsService({ spuId: goods.spuId, skuId: goods.skuId })
+      );
+      Promise.all(deletePromises).then(() => {
+        Toast({ context: this, selector: '#t-toast', message: '删除成功' });
+        this.setData({ isEditMode: false });
+        this.refreshData();
+      });
+    });
   },
 });

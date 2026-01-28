@@ -96,7 +96,13 @@ Component({
           this.onConfirm(this.data.order);
           break;
         case OrderButtonTypes.PAY:
-          this.onPay(this.data.order);
+          // 支付功能已移除，不再需要
+          Toast({
+            context: this,
+            selector: '#t-toast',
+            message: '订单已提交，等待后台确认',
+            icon: 'info-circle',
+          });
           break;
         case OrderButtonTypes.APPLY_REFUND:
           this.onApplyRefund(this.data.order);
@@ -150,11 +156,12 @@ Component({
     },
 
     onPay() {
+      // 支付功能已移除
       Toast({
         context: this,
         selector: '#t-toast',
-        message: '你点击了去支付',
-        icon: 'check-circle',
+        message: '订单已提交，等待后台确认',
+        icon: 'info-circle',
       });
     },
 

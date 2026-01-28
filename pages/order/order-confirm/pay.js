@@ -27,7 +27,13 @@ export const commitPay = (params) => {
 
 export const paySuccess = (payOrderInfo) => {
   const { payAmt, tradeNo, groupId, promotionId } = payOrderInfo;
-  // 支付成功
+  // 支付成功，清空购物车
+  const { clearSelectedCartItems } = require('../../../services/cart/cart');
+  clearSelectedCartItems().catch(() => {
+    // 清空购物车失败不影响订单流程
+    console.log('清空购物车失败');
+  });
+
   Toast({
     context: this,
     selector: '#t-toast',

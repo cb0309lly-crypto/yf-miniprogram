@@ -1,6 +1,6 @@
 import Toast from 'tdesign-miniprogram/toast/index';
 import { fetchSettleDetail } from '../../../services/order/orderConfirm';
-import { commitPay, wechatPayOrder } from './pay';
+import { commitPay } from './pay';
 import { getAddressPromise } from '../../../services/address/list';
 
 const stripeImg = `https://tdesign.gtimg.com/miniprogram/template/retail/order/stripe.png`;
@@ -375,8 +375,26 @@ Page({
         if (this.isInvalidOrder(data)) {
           return;
         }
-        if (res.code === 'Success') {
-          this.handlePay(data, settleDetailData);
+        if (res.code === 0) {
+          // 订单提交成功，直接跳转到订单列表
+          Toast({
+            context: this,
+            selector: '#t-toast',
+            message: '订单提交成功',
+            duration: 2000,
+            icon: 'check-circle',
+          });
+
+
+          // 清空购物车中已选中的商品
+          const { clearSelectedCartItems } = require('../../../services/cart/cart');
+          clearSelectedCartItems().catch(() => {
+            console.log('清空购物车失败');
+          });
+
+          setTimeout(() => {
+            wx.redirectTo({ url: '/pages/order/order-list/index' });
+          }, 1500);
         } else {
           Toast({
             context: this,
@@ -397,67 +415,26 @@ Page({
           Toast({
             context: this,
             selector: '#t-toast',
-            message: err.msg || '支付异常',
+            message: err.msg || '提交订单异常',
             duration: 2000,
             icon: '',
           });
           this.init();
-        } else if (err.code === 'ORDER_PAY_FAIL') {
-          Toast({
-            context: this,
-            selector: '#t-toast',
-            message: '支付失败',
-            duration: 2000,
-            icon: 'close-circle',
-          });
-          setTimeout(() => {
-            wx.redirectTo({ url: '/pages/order/order-list/index' });
-          });
-        } else if (err.code === 'ILLEGAL_CONFIG_PARAM') {
-          Toast({
-            context: this,
-            selector: '#t-toast',
-            message: '支付失败，微信支付商户号设置有误，请商家重新检查支付设置。',
-            duration: 2000,
-            icon: 'close-circle',
-          });
-          setTimeout(() => {
-            wx.redirectTo({ url: '/pages/order/order-list/index' });
-          });
         } else {
           Toast({
             context: this,
             selector: '#t-toast',
-            message: err.msg || '提交支付超时，请稍后重试',
+            message: err.msg || '提交订单超时，请稍后重试',
             duration: 2000,
             icon: '',
           });
           setTimeout(() => {
-            // 提交支付失败  返回购物车
+            // 提交失败  返回购物车
             wx.navigateBack();
           }, 2000);
         }
       },
     );
-  },
-
-  // 处理支付
-  handlePay(data, settleDetailData) {
-    const { channel, payInfo, tradeNo, interactId, transactionId } = data;
-    const { totalAmount, totalPayAmount } = settleDetailData;
-    const payOrderInfo = {
-      payInfo: payInfo,
-      orderId: tradeNo,
-      orderAmt: totalAmount,
-      payAmt: totalPayAmount,
-      interactId: interactId,
-      tradeNo: tradeNo,
-      transactionId: transactionId,
-    };
-
-    if (channel === 'wechat') {
-      wechatPayOrder(payOrderInfo);
-    }
   },
 
   hide() {

@@ -11,3 +11,54 @@
   --td-button-default-color: #000;
   --td-button-primary-text-color: #fa4126;
 }
+
+.cart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 32rpx;
+  background: #fff;
+}
+
+.cart-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.edit-btn {
+  font-size: 28rpx;
+  color: #0052d9;
+  padding: 8rpx 16rpx;
+}
+
+.cart-edit-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 110rpx;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 32rpx;
+  box-shadow: 0 -2rpx 8rpx rgba(0, 0, 0, 0.08);
+  z-index: 100;
+}
+
+.select-all {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.batch-delete-btn {
+  background: #e34d59;
+  color: #fff;
+  padding: 16rpx 48rpx;
+  border-radius: 48rpx;
+  font-size: 28rpx;
+}

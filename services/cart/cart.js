@@ -162,3 +162,15 @@ export function updateCartItemQuantity(cartId, quantity) {
     }
   });
 }
+
+/** 清空购物车（删除已选中的商品） */
+export function clearSelectedCartItems() {
+  const userNo = getUserNo();
+  return request({
+    url: '/cart/clear-selected',
+    method: 'POST',
+    data: {
+      userNo
+    }
+  });
+}
