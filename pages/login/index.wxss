@@ -25,6 +25,11 @@
   color: #333;
   font-weight: bold;
 }
+.subtitle {
+  font-size: 28rpx;
+  color: #999;
+  margin-top: 16rpx;
+}
 .btn-area {
   width: 80%;
 }
@@ -35,4 +40,13 @@
   height: 88rpx;
   line-height: 88rpx;
   font-size: 32rpx;
+}
+.skip-btn {
+  background-color: transparent;
+  color: #666;
+  border: none;
+  height: 88rpx;
+  line-height: 88rpx;
+  font-size: 28rpx;
+  margin-top: 20rpx;
 }

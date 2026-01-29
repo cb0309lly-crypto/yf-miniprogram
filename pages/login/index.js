@@ -2,10 +2,11 @@ import request from '../../utils/request';
 
 Page({
   onLoad() {
-    // 检测是否已有 access_token，如果有则直接进入主页
+    // 移除自动跳转逻辑，允许用户主动选择登录
+    // 检测是否已有 access_token，如果有则根据重定向地址跳转
     const token = wx.getStorageSync('access_token');
     if (token) {
-      wx.reLaunch({ url: '/pages/home/home' });
+      this.redirectAfterLogin();
     }
   },
 
@@ -47,12 +48,7 @@ Page({
 
                     // 延迟跳转
                     setTimeout(() => {
-                      const pages = getCurrentPages();
-                      if (pages.length > 1) {
-                        wx.navigateBack();
-                      } else {
-                        wx.reLaunch({ url: '/pages/home/home' });
-                      }
+                      this.redirectAfterLogin();
                     }, 1000);
                   } else {
                     throw new Error(loginRes.msg || '登录返回异常');
@@ -82,4 +78,69 @@ Page({
       },
     });
   },
+
+  /**
+   * 登录成功后的重定向逻辑
+   */
+  redirectAfterLogin() {
+    // 获取登录前保存的页面地址
+    const redirectUrl = wx.getStorageSync('login_redirect_url');
+    
+    // 清除重定向地址
+    wx.removeStorageSync('login_redirect_url');
+    
+    if (redirectUrl) {
+      // 判断是否是 tabBar 页面
+      const tabBarPages = [
+        '/pages/home/home',
+        '/pages/category/index',
+        '/pages/cart/index',
+        '/pages/usercenter/index'
+      ];
+      
+      const isTabBar = tabBarPages.some(page => redirectUrl.startsWith(page));
+      
+      if (isTabBar) {
+        // TabBar 页面使用 switchTab
+        wx.switchTab({ 
+          url: redirectUrl.split('?')[0],
+          fail: () => {
+            // 如果跳转失败，返回首页
+            wx.switchTab({ url: '/pages/home/home' });
+          }
+        });
+      } else {
+        // 非 TabBar 页面使用 redirectTo
+        wx.redirectTo({
+          url: redirectUrl,
+          fail: () => {
+            // 如果跳转失败，尝试返回上一页
+            wx.navigateBack({
+              fail: () => {
+                // 如果没有上一页，跳转到首页
+                wx.switchTab({ url: '/pages/home/home' });
+              }
+            });
+          }
+        });
+      }
+    } else {
+      // 没有重定向地址，检查页面栈
+      const pages = getCurrentPages();
+      if (pages.length > 1) {
+        // 有上一页，返回上一页
+        wx.navigateBack();
+      } else {
+        // 没有上一页，跳转到首页
+        wx.switchTab({ url: '/pages/home/home' });
+      }
+    }
+  },
+
+  /**
+   * 跳过登录，返回首页
+   */
+  skipLogin() {
+    wx.switchTab({ url: '/pages/home/home' });
+  }
 });

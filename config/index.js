@@ -1,8 +1,8 @@
 export const config = {
   /** 是否使用mock代替api返回 */
   useMock: false,
-  apiBaseUrl: 'http://localhost:3000',
-  // apiBaseUrl: 'https://lcyt360.com',
+  // apiBaseUrl: 'http://localhost:3000',
+  apiBaseUrl: 'https://lcyt360.com',
 };
 
 export const cdnBase =

@@ -22,10 +22,18 @@ const request = (options) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data);
         } else if (res.statusCode === 401) {
-          // Token 过期或未授权，可以跳转到登录页
+          // Token 过期或未授权
           wx.removeStorageSync('access_token');
-          wx.navigateTo({ url: '/pages/login/index' });
-          reject(res);
+          wx.removeStorageSync('userInfo');
+          
+          // 不直接跳转，而是返回错误信息，由调用方决定如何处理
+          const error = {
+            statusCode: 401,
+            message: '登录已过期，请重新登录',
+            needLogin: true,
+            data: res.data
+          };
+          reject(error);
         } else {
           reject(res);
         }

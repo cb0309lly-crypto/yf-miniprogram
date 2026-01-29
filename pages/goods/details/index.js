@@ -6,6 +6,7 @@ import {
   getGoodsDetailsCommentList,
   getGoodsDetailsCommentsCount,
 } from '../../../services/good/fetchGoodsDetailsComments';
+import { checkLogin } from '../../../utils/auth';
 
 import { cdnBase } from '../../../config/index';
 
@@ -106,11 +107,23 @@ Page({
   },
 
   buyItNow() {
-    this.showSkuSelectPopup(1);
+    // 检查登录状态
+    checkLogin({
+      success: () => {
+        // 已登录，显示规格选择弹窗
+        this.showSkuSelectPopup(1);
+      }
+    });
   },
 
   toAddCart() {
-    this.showSkuSelectPopup(2);
+    // 检查登录状态
+    checkLogin({
+      success: () => {
+        // 已登录，显示规格选择弹窗
+        this.showSkuSelectPopup(2);
+      }
+    });
   },
 
   toNav(e) {
@@ -246,13 +259,28 @@ Page({
         this.handlePopupHide();
       })
       .catch((err) => {
-        Toast({
-          context: this,
-          selector: '#t-toast',
-          message: err.msg || '加入购物车失败',
-          icon: 'error-circle',
-          duration: 1000,
-        });
+        // 处理 401 错误
+        if (err.needLogin) {
+          this.handlePopupHide();
+          wx.showModal({
+            title: '提示',
+            content: '登录已过期，请重新登录',
+            confirmText: '去登录',
+            success: (res) => {
+              if (res.confirm) {
+                wx.navigateTo({ url: '/pages/login/index' });
+              }
+            }
+          });
+        } else {
+          Toast({
+            context: this,
+            selector: '#t-toast',
+            message: err.msg || '加入购物车失败',
+            icon: 'error-circle',
+            duration: 1000,
+          });
+        }
       });
   },
 
@@ -268,31 +296,37 @@ Page({
       });
       return;
     }
-    this.handlePopupHide();
-    const query = {
-      quantity: buyNum,
-      storeId: '1',
-      spuId: this.data.spuId,
-      goodsName: this.data.details.title,
-      skuId: type === 1 ? this.data.skuList[0].skuId : this.data.selectItem.skuId,
-      available: this.data.details.available,
-      price: this.data.details.minSalePrice,
-      specInfo: this.data.details.specList?.map((item) => ({
-        specTitle: item.title,
-        specValue: item.specValueList[0].specValue,
-      })),
-      primaryImage: this.data.details.primaryImage,
-      spuId: this.data.details.spuId,
-      thumb: this.data.details.primaryImage,
-      title: this.data.details.title,
-    };
-    let urlQueryStr = obj2Params({
-      goodsRequestList: JSON.stringify([query]),
-    });
-    urlQueryStr = urlQueryStr ? `?${urlQueryStr}` : '';
-    const path = `/pages/order/order-confirm/index${urlQueryStr}`;
-    wx.navigateTo({
-      url: path,
+    
+    // 再次检查登录状态（防止 token 在选择规格过程中过期）
+    checkLogin({
+      success: () => {
+        this.handlePopupHide();
+        const query = {
+          quantity: buyNum,
+          storeId: '1',
+          spuId: this.data.spuId,
+          goodsName: this.data.details.title,
+          skuId: type === 1 ? this.data.skuList[0].skuId : this.data.selectItem.skuId,
+          available: this.data.details.available,
+          price: this.data.details.minSalePrice,
+          specInfo: this.data.details.specList?.map((item) => ({
+            specTitle: item.title,
+            specValue: item.specValueList[0].specValue,
+          })),
+          primaryImage: this.data.details.primaryImage,
+          spuId: this.data.details.spuId,
+          thumb: this.data.details.primaryImage,
+          title: this.data.details.title,
+        };
+        let urlQueryStr = obj2Params({
+          goodsRequestList: JSON.stringify([query]),
+        });
+        urlQueryStr = urlQueryStr ? `?${urlQueryStr}` : '';
+        const path = `/pages/order/order-confirm/index${urlQueryStr}`;
+        wx.navigateTo({
+          url: path,
+        });
+      }
     });
   },
 

@@ -2,6 +2,7 @@ import { fetchHome } from '../../services/home/home';
 import { fetchGoodsList } from '../../services/good/fetchGoods';
 import { addToCart } from '../../services/cart/cart';
 import Toast from 'tdesign-miniprogram/toast/index';
+import { checkLogin } from '../../utils/auth';
 
 Page({
   data: {
@@ -134,26 +135,46 @@ Page({
     const { index } = e.detail;
     const { spuId } = this.data.goodsList[index];
     
-    try {
-      await addToCart({
-        productNo: spuId,
-        quantity: 1,
-      });
-      
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '加入购物车成功',
-        theme: 'success',
-      });
-    } catch (err) {
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: err.message || err.msg || '加入购物车失败',
-        theme: 'fail',
-      });
-    }
+    // 检查登录状态
+    checkLogin({
+      success: async () => {
+        // 已登录，执行加购操作
+        try {
+          await addToCart({
+            productNo: spuId,
+            quantity: 1,
+          });
+          
+          Toast({
+            context: this,
+            selector: '#t-toast',
+            message: '加入购物车成功',
+            theme: 'success',
+          });
+        } catch (err) {
+          // 处理 401 错误
+          if (err.needLogin) {
+            wx.showModal({
+              title: '提示',
+              content: '登录已过期，请重新登录',
+              confirmText: '去登录',
+              success: (res) => {
+                if (res.confirm) {
+                  wx.navigateTo({ url: '/pages/login/index' });
+                }
+              }
+            });
+          } else {
+            Toast({
+              context: this,
+              selector: '#t-toast',
+              message: err.message || err.msg || '加入购物车失败',
+              theme: 'fail',
+            });
+          }
+        }
+      }
+    });
   },
 
   navToSearchPage() {

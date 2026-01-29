@@ -1,9 +1,11 @@
 <view class="login-container">
   <view class="logo-area">
-    <image class="logo" src="/assets/imgs/soybean.jpg" mode="aspectFit"></image>
+    <image class="logo" src="https://yif-static.oss-cn-hangzhou.aliyuncs.com/common/qs.jpg" mode="aspectFit"></image>
     <view class="title">欢迎来到亦丰零售</view>
+    <view class="subtitle">登录后可享受更多服务</view>
   </view>
   <view class="btn-area">
     <button class="login-btn" bindtap="handleLogin">微信一键登录</button>
+    <button class="skip-btn" bindtap="skipLogin">暂不登录，先逛逛</button>
   </view>
 </view>

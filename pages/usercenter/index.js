@@ -1,5 +1,6 @@
 import { fetchUserCenter } from '../../services/usercenter/fetchUsercenter';
 import Toast from 'tdesign-miniprogram/toast/index';
+import { isLoggedIn, checkLogin, getUserInfo as getStoredUserInfo } from '../../utils/auth';
 
 const menuData = [
   [
@@ -52,9 +53,10 @@ const orderTagInfos = [
 
 const getDefaultData = () => ({
   showMakePhone: false,
+  isLoggedIn: false,
   userInfo: {
     avatarUrl: '',
-    nickName: '正在登录...',
+    nickName: '点击登录',
     phoneNumber: '',
   },
   menuData,
@@ -74,14 +76,46 @@ Page({
 
   onShow() {
     this.getTabBar().init();
+    this.checkLoginStatus();
     this.init();
   },
+  
   onPullDownRefresh() {
     this.init();
   },
 
+  checkLoginStatus() {
+    const loggedIn = isLoggedIn();
+    this.setData({
+      isLoggedIn: loggedIn
+    });
+
+    if (loggedIn) {
+      // 已登录，尝试从缓存获取用户信息
+      const cachedUserInfo = getStoredUserInfo();
+      if (cachedUserInfo) {
+        this.setData({
+          userInfo: cachedUserInfo,
+          currAuthStep: 2
+        });
+      }
+    } else {
+      // 未登录，显示默认状态
+      this.setData({
+        userInfo: {
+          avatarUrl: '',
+          nickName: '点击登录',
+          phoneNumber: '',
+        },
+        currAuthStep: 1
+      });
+    }
+  },
+
   init() {
-    this.fetUseriInfoHandle();
+    if (isLoggedIn()) {
+      this.fetUseriInfoHandle();
+    }
   },
 
   fetUseriInfoHandle() {
@@ -105,7 +139,22 @@ Page({
         orderTagInfos: info,
         customerServiceInfo,
         currAuthStep: 2,
+        isLoggedIn: true
       });
+      wx.stopPullDownRefresh();
+    }).catch((err) => {
+      // 处理 401 错误
+      if (err.needLogin) {
+        this.setData({
+          isLoggedIn: false,
+          currAuthStep: 1,
+          userInfo: {
+            avatarUrl: '',
+            nickName: '点击登录',
+            phoneNumber: '',
+          }
+        });
+      }
       wx.stopPullDownRefresh();
     });
   },
@@ -115,7 +164,12 @@ Page({
 
     switch (type) {
       case 'address': {
-        wx.navigateTo({ url: '/pages/user/address/list/index' });
+        // 需要登录才能查看地址
+        checkLogin({
+          success: () => {
+            wx.navigateTo({ url: '/pages/user/address/list/index' });
+          }
+        });
         break;
       }
       default: {
@@ -134,15 +188,25 @@ Page({
   jumpNav(e) {
     const status = e.detail.tabType;
 
-    if (status === 0) {
-      wx.navigateTo({ url: '/pages/order/after-service-list/index' });
-    } else {
-      wx.navigateTo({ url: `/pages/order/order-list/index?status=${status}` });
-    }
+    // 需要登录才能查看订单
+    checkLogin({
+      success: () => {
+        if (status === 0) {
+          wx.navigateTo({ url: '/pages/order/after-service-list/index' });
+        } else {
+          wx.navigateTo({ url: `/pages/order/order-list/index?status=${status}` });
+        }
+      }
+    });
   },
 
   jumpAllOrder() {
-    wx.navigateTo({ url: '/pages/order/order-list/index' });
+    // 需要登录才能查看订单
+    checkLogin({
+      success: () => {
+        wx.navigateTo({ url: '/pages/order/order-list/index' });
+      }
+    });
   },
 
   openMakePhone() {
@@ -160,7 +224,14 @@ Page({
   },
 
   gotoUserEditPage() {
-    const { currAuthStep } = this.data;
+    const { currAuthStep, isLoggedIn } = this.data;
+    
+    if (!isLoggedIn) {
+      // 未登录，跳转到登录页
+      wx.navigateTo({ url: '/pages/login/index' });
+      return;
+    }
+    
     if (currAuthStep === 2) {
       wx.navigateTo({ url: '/pages/user/person-info/index' });
     } else {

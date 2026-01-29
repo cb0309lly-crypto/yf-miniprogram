@@ -7,6 +7,7 @@ import {
   deleteCartItem,
   updateCartItemQuantity,
 } from '../../services/cart/cart';
+import { checkLogin } from '../../utils/auth';
 
 Page({
   data: {
@@ -17,7 +18,14 @@ Page({
   // 调用自定义tabbar的init函数，使页面与tabbar激活状态保持一致
   onShow() {
     this.getTabBar().init();
-    this.refreshData();
+    
+    // 检查登录状态
+    checkLogin({
+      success: () => {
+        // 已登录，刷新购物车数据
+        this.refreshData();
+      }
+    });
   },
 
   onLoad() {
@@ -87,6 +95,17 @@ Page({
       cartGroupData.selectedGoodsCount = selectedGoodsCount;
       
       this.setData({ cartGroupData });
+    }).catch((err) => {
+      // 处理 401 错误
+      if (err.needLogin) {
+        // 已经在 checkLogin 中处理了跳转
+        return;
+      }
+      // 其他错误处理
+      wx.showToast({
+        title: err.message || '获取购物车数据失败',
+        icon: 'none'
+      });
     });
   },
 
